@@ -19,7 +19,7 @@ from pikeos import ArmPikeOS
 # Cortex-M runtimes
 from arm.cortexm import Stm32, Sam, SmartFusion2, LM3S, M1AGL, Microbit, \
      CortexM0, CortexM0P, CortexM1, CortexM3, CortexM4, CortexM4F, \
-     CortexM7F, CortexM7DF
+     CortexM7F, CortexM7DF, NRF52
 
 # Cortex-A/R runtimes
 from arm.cortexar import TMS570, Rpi2, Rpi2Mc, Zynq7000
@@ -70,6 +70,8 @@ def build_configs(target):
         t = Stm32(target)
     elif target == 'openmv2':
         t = Stm32(target)
+    elif target.startswith('nrf52'):
+        t = NRF52(target)
     elif target == 'tms570':
         # by default, the TMS570LS3137 HDK board
         t = TMS570('tms570ls31')

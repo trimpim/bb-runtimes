@@ -541,6 +541,158 @@ class Stm32(ArmV7MTarget):
             'arm/stm32/%s/svd/a-intnam.ads' % self.mcu])
 
 
+class NRF52CommonArchSupport(ArchSupport):
+    """Holds sources common to all nRF52 boards"""
+    @property
+    def name(self):
+        return 'nrf52'
+
+    @property
+    def parent(self):
+        return ArmV7MArch
+
+    @property
+    def loaders(self):
+        return ('ROM', 'RAM', 'USER')
+
+    @property
+    def readme_file(self):
+        return 'arm/nrf52/README'
+
+    def __init__(self):
+        super(NRF52CommonArchSupport, self).__init__()
+
+        self.add_linker_script('arm/nrf52/common-RAM.ld', loader='RAM')
+        self.add_linker_script('arm/nrf52/common-ROM.ld', loader='ROM')
+
+        self.add_sources('crt0', [
+            'src/s-bbpara__nrf52.ads',
+            'arm/nrf52/s-nrf52.ads',
+            'arm/nrf52/start-rom.S',
+            'arm/nrf52/start-ram.S',
+            'arm/nrf52/start-common.S',
+            'arm/nrf52/setup_pll.adb',
+            'arm/nrf52/setup_pll.ads'])
+
+
+class NRF52(ArmV7MTarget):
+    """Generic handling of nrf52 boards"""
+    @property
+    def name(self):
+        return self.board
+
+    @property
+    def parent(self):
+        return NRF52CommonArchSupport
+
+    @property
+    def use_semihosting_io(self):
+        return True
+
+    @property
+    def has_double_precision_fpu(self):
+            return False
+
+    @property
+    def cortex(self):
+            return 'cortex-m4'
+
+    @property
+    def fpu(self):
+        if self.cortex == 'cortex-m4':
+            return 'fpv4-sp-d16'
+        elif not self.has_double_precision_fpu:
+            return 'fpv5-sp-d16'
+        else:
+            return 'fpv5-d16'
+
+    @property
+    def compiler_switches(self):
+        # The required compiler switches
+        return ('-mlittle-endian', '-mhard-float',
+                '-mcpu=%s' % self.cortex,
+                '-mfpu=%s' % self.fpu,
+                '-mthumb')
+
+    def __init__(self, board):
+        self.board = board
+        if self.board == 'nrf52840':
+            self.mcu = 'nrf52840'
+        elif self.board == 'nrf52832':
+            self.mcu = 'nrf52832'
+        elif self.board == 'nrf52810':
+            self.mcu = 'nrf52810'
+        else:
+            assert False, "Unknown nRF52 board: %s" % self.board
+
+        super(NRF52, self).__init__()
+
+        self.add_linker_script('arm/nrf52/%s/memory-map.ld' % self.mcu,
+                               loader=('RAM', 'ROM'))
+        # startup code
+        self.add_sources('crt0', [
+            'arm/nrf52/%s/s-bbbopa.ads' % self.mcu,
+            'arm/nrf52/%s/s-bbmcpa.ads' % self.mcu,
+            'arm/nrf52/%s/s-bbmcpa.adb' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-aar.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-acl.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-ccm.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-clock.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-comp.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-cryptocell.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-ecb.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-egu.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-ficr.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-fpu.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-gpio.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-gpiote.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-i2s.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-lpcomp.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-mwu.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-nfct.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-nvmc.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-pdm.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-power.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-ppi.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-pwm.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-qdec.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-qspi.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-radio.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-rng.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-rtc.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-saadc.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-spi.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-spim.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-spis.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-swi.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-temp.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-timer.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-twi.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-twim.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-twis.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-uart.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-uarte.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-uicr.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-usbd.ads' % self.mcu,
+            'arm/nrf52/%s/svd/i-nrf52-wdt.ads' % self.mcu])
+
+        if self.board == 'nrf52840':
+            self.add_sources('crt0', [
+                'arm/nrf52/nrf52840/s-nrf52.adb'])
+        elif self.board == 'nrf52832':
+            self.add_sources('crt0', [
+                'arm/nrf52/nrf52832/s-nrf52.adb'])
+        elif self.board == 'nrf52810':
+            self.add_sources('crt0', [
+                'arm/nrf52/nrf52810/s-nrf52.adb'])
+
+        # ravenscar support
+        self.add_sources('gnarl', [
+            'arm/nrf52/%s/svd/handler.S' % self.mcu,
+            'arm/nrf52/%s/svd/a-intnam.ads' % self.mcu])
+
+
 class CortexM0(ArmV6MTarget):
     @property
     def name(self):

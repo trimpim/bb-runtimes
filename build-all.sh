@@ -370,6 +370,22 @@ build_full_stm32f469()
     do_ravenscar arm-eabi ravenscar-full/stm32f469disco
 }
 
+build_zfp_nrf52840()
+{
+    do_zfp arm-eabi zfp/nrf52840
+}
+
+build_sfp_nrf52840()
+{
+    do_ravenscar arm-eabi ravenscar-sfp/nrf52840
+}
+
+build_full_nrf52840()
+{
+    do_ravenscar arm-eabi ravenscar-full/nrf52840
+}
+
+
 build_zfp_stm32f7()
 {
     do_zfp arm-eabi zfp/stm32f7disco
@@ -609,12 +625,15 @@ if [ $# -eq 0 ]; then
   build_opts="-q -j0"
 
   build_rts arm-eabi zfp/stm32f4
+  build_rts arm-eabi zfp/nrf52840
   build_rts arm-eabi zfp/lm3s
   build_rts arm-eabi zfp/tms570
   build_rts arm-eabi zfp/tms570-sci
   build_rts arm-eabi ravenscar-sfp/stm32f4
+  build_rts arm-eabi ravenscar-sfp/nrf52840
   build_rts arm-eabi ravenscar-sfp/tms570
   build_rts arm-eabi ravenscar-full/stm32f4
+  build_rts arm-eabi ravenscar-full/nrf52840
   build_rts arm-eabi ravenscar-full/tms570
   build_rts arm-eabi ravenscar-full/tms570-sci
 
@@ -766,6 +785,16 @@ else
                   zfp)  build_zfp_stm32f469 ;;
                   sfp)  build_sfp_stm32f469 ;;
                   full) build_full_stm32f469 ;;
+                  *) echo "Unknown command $opt for target $target"; exit 2;;
+              esac
+              ;;
+          nrf52840)
+              case $opt in
+                  zfp)  build_zfp_nrf52840 ;;
+                  sfp)  build_sfp_nrf52840 ;;
+                  full) build_full_nrf52840 ;;
+                  raven-sfp) raven_testsuite ravenscar-sfp/nrf52840 ;;
+                  raven-full) raven_testsuite ravenscar-full/nrf52840 ;;
                   *) echo "Unknown command $opt for target $target"; exit 2;;
               esac
               ;;
